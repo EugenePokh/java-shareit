@@ -15,4 +15,6 @@ public interface ItemService {
     Optional<Item> findById(Long id);
 
     List<Item> findAll();
+
+    List<Item> findAvailableByText(String text);
 }

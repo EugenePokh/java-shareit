@@ -19,9 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
+
 @RestController
 @RequestMapping(path = "/users")
 @AllArgsConstructor
@@ -39,10 +37,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@Validated @RequestBody UserPostDto userDto) {
-        if (userService.findByEmail(userDto.getEmail()).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        User created = userService.save(toModel(userDto));
+         User created = userService.save(toModel(userDto));
         return new ResponseEntity<>(userMapper.toDto(created), HttpStatus.CREATED);
     }
 
@@ -63,7 +58,6 @@ public class UserController {
             }
             user.setEmail(userDto.getEmail());
         }
-
 
         return userMapper.toDto(userService.save(user));
     }

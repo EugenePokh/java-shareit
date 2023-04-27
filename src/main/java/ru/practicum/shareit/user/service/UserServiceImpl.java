@@ -1,52 +1,42 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@Primary
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    Map<Long, User> users = new HashMap<>();
-    private Long idCounter = 0L;
-
-    @Override
-    public void delete(User user) {
-        users.remove(user.getId());
-    }
-
-    @Override
-    public List<User> findAll() {
-        return new ArrayList<>(users.values());
-    }
+    private final UserRepository userRepository;
 
     @Override
     public Optional<User> findById(Long id) {
-        return Optional.ofNullable(users.get(id));
-    }
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return users.values()
-                .stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
+        return userRepository.findById(id);
     }
 
     @Override
     public User save(User user) {
-        if (user.getId() == null) {
-            user.setId(generateId());
-        }
-
-        users.put(user.getId(), user);
-
-        return user;
+        return userRepository.save(user);
     }
 
-    private Long generateId() {
-        idCounter++;
-        return idCounter;
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public void delete(User user) {
+        userRepository.delete(user);
     }
 }

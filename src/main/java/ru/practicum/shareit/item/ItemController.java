@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemPatchDto;
 import ru.practicum.shareit.item.dto.ItemPostDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemNotFoundException;
@@ -16,12 +17,10 @@ import ru.practicum.shareit.user.service.UserService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
@@ -52,17 +51,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public List<ItemWithBookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         return itemService.findAllByUser(user)
                 .stream()
-                .map(itemMapper::toDto)
+                .map(item -> itemMapper.toDtoWithBooking(item, user))
+                .sorted(Comparator.comparing(ItemWithBookingResponseDto::getId))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ItemResponseDto findById(@PathVariable Long id) {
-        return itemMapper.toDto(itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id)));
+    public ItemWithBookingResponseDto findById(@PathVariable Long id, @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        return itemMapper.toDtoWithBooking(itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id)), user);
     }
 
     @GetMapping("/search")
@@ -70,10 +71,7 @@ public class ItemController {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemService.findAll()
-                .stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) || item.getDescription().toLowerCase().contains(text.toLowerCase()))
+        return itemService.findAvailableByText(text).stream()
                 .map(itemMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -82,7 +80,8 @@ public class ItemController {
         Item item = new Item();
         item.setName(itemDto.getName());
         item.setAvailable(itemDto.getAvailable());
-        item.setRequest(itemDto.getRequest());
+        //todo
+        //item.setRequest(itemDto.getRequest());
         item.setDescription(itemDto.getDescription());
         item.setOwner(user);
         return item;
@@ -105,7 +104,8 @@ public class ItemController {
         }
 
         if (itemDto.getRequest() != null) {
-            item.setRequest(itemDto.getRequest());
+            //todo
+            //item.setRequest(itemDto.getRequest());
         }
 
         return item;
