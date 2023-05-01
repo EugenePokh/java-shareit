@@ -71,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking createReservation(Booking booking) {
-        if (booking.getBooker().getId() == booking.getItem().getOwner().getId()) {
+        if (booking.getBooker().getId().equals(booking.getItem().getOwner().getId())) {
             throw new BookingNotFoundException("Owner can't book his items");
         }
 
