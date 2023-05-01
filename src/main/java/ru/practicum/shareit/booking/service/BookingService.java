@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingService {
-    Booking save(Booking booking);
 
     Optional<Booking> findById(Long bookingId);
 
@@ -35,4 +34,6 @@ public interface BookingService {
     Booking createReservation(Booking booking);
 
     List<Booking> findAllByItemAndStatus(Item item, Booking.Status approved);
+
+    Booking decideReservation(Booking booking, User user, Boolean approved);
 }

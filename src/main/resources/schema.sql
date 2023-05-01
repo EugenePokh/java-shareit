@@ -39,7 +39,8 @@ create table comments (
 id BIGSERIAL primary key,
 text varchar,
 item_id BIGINT REFERENCES items (id),
-author_id BIGINT REFERENCES users (id)
+author_id BIGINT REFERENCES users (id),
+created timestamp
 );
 
 

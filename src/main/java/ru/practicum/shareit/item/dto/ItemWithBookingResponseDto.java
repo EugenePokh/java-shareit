@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ItemWithBookingResponseDto {
@@ -12,6 +14,8 @@ public class ItemWithBookingResponseDto {
 
     private Booking lastBooking;
     private Booking nextBooking;
+
+    private List<CommentResponseDto> comments = new ArrayList<>();
 
     @Data
     public static class Booking {

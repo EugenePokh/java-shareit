@@ -2,12 +2,12 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemPatchDto;
-import ru.practicum.shareit.item.dto.ItemPostDto;
-import ru.practicum.shareit.item.dto.ItemResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemNotFoundException;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserNotFoundException;
@@ -30,7 +30,8 @@ public class ItemController {
     private final UserService userService;
     private final ItemService itemService;
     private final ItemMapper itemMapper;
-
+    private final CommentService commentService;
+    private final CommentMapper commentMapper;
 
     @PostMapping
     public ItemResponseDto post(@Valid @RequestBody ItemPostDto itemDto,
@@ -38,6 +39,17 @@ public class ItemController {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = toModel(itemDto, user);
         return itemMapper.toDto(itemService.save(item));
+    }
+
+    @PostMapping("/{id}/comment")
+    public CommentResponseDto postComment(@Valid @RequestBody CommentRequestDto commentRequestDto,
+                               @PathVariable Long id,
+                               @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
+
+        Comment comment = commentService.createCommentForItem(item, user, commentRequestDto.getText());
+        return commentMapper.toDto(comment);
     }
 
     @PatchMapping("/{id}")

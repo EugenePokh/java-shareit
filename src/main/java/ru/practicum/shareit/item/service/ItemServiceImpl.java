@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 @Primary
 @AllArgsConstructor
-public class ItemServiceImpl implements ItemService{
+public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
 

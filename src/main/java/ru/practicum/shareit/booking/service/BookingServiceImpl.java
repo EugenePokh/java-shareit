@@ -15,10 +15,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
 
     @Override
-    public Booking save(Booking booking) {
-        return bookingRepository.save(booking);
-    }
-    @Override
     public Optional<Booking> findById(Long id) {
         return bookingRepository.findById(id);
     }
@@ -80,11 +76,30 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(Booking.Status.WAITING);
-        return save(booking);
+        return bookingRepository.save(booking);
     }
 
     @Override
     public List<Booking> findAllByItemAndStatus(Item item, Booking.Status approved) {
         return bookingRepository.findAllByItemAndStatus(item, approved);
+    }
+
+    @Override
+    public Booking decideReservation(Booking booking, User user, Boolean approved) {
+        if (!booking.getItem().getOwner().equals(user)) {
+            throw new BookingNotFoundException("No such booking for user by id " + user.getId());
+        }
+
+        if (!booking.getStatus().equals(Booking.Status.WAITING)) {
+            throw new BookingValidationException("Status already define");
+        }
+
+        if (approved) {
+            booking.setStatus(Booking.Status.APPROVED);
+        } else {
+            booking.setStatus(Booking.Status.REJECTED);
+        }
+
+        return bookingRepository.save(booking);
     }
 }

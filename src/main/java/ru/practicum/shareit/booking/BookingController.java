@@ -3,7 +3,6 @@ package ru.practicum.shareit.booking;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -50,21 +49,8 @@ public class BookingController {
                          @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Booking booking = bookingService.findById(bookingId).orElseThrow(() -> new BookingNotFoundException("No booking by id " + bookingId));
-        if (!booking.getItem().getOwner().equals(user)){
-            throw new BookingNotFoundException("No such booking for user by id " + userId);
-        }
 
-        if (!booking.getStatus().equals(Booking.Status.WAITING)) {
-            throw new BookingValidationException("Status already define");
-        }
-
-        if (approved) {
-            booking.setStatus(Booking.Status.APPROVED);
-        } else {
-            booking.setStatus(Booking.Status.REJECTED);
-        }
-
-        return bookingService.save(booking);
+        return bookingService.decideReservation(booking, user, approved);
     }
 
     @GetMapping("/{bookingId}")
@@ -98,7 +84,6 @@ public class BookingController {
             return bookingService.findAllByBookerAndStatus(user, Booking.Status.REJECTED);
         }
 
-        //throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown state: " + state);
         throw new BookingValidationException("Unknown state: " + state);
 
     }
@@ -122,7 +107,6 @@ public class BookingController {
             return bookingService.findAllByOwnerAndStatus(user, Booking.Status.REJECTED);
         }
 
-        //throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown state: " + state);
         throw new BookingValidationException("Unknown state: " + state);
 
     }
