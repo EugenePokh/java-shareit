@@ -112,7 +112,7 @@ public class BookingController {
     }
 
     @ExceptionHandler(BookingValidationException.class)
-    public ResponseEntity handleException(BookingValidationException ex) {
+    public ResponseEntity<Object> handleException(BookingValidationException ex) {
         Map<String, String> errors = new HashMap<>();
         errors.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
