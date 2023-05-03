@@ -15,6 +15,11 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
 
     @Override
+    public List<Booking> findAllPastByBookerAndStatus(User user, Booking.Status status) {
+        return bookingRepository.findAllPastByBookerAndStatus(user, status);
+    }
+
+    @Override
     public Optional<Booking> findById(Long id) {
         return bookingRepository.findById(id);
     }

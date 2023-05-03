@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -27,10 +26,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment createCommentForItem(Item item, User user, String text) {
-        List<Booking> bookingList = bookingService.findAllByBookerAndStatus(user, Booking.Status.APPROVED)
-                .stream()
-                .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
-                .collect(Collectors.toList());
+        List<Booking> bookingList = bookingService.findAllPastByBookerAndStatus(user, Booking.Status.APPROVED);
+
         if (bookingList.size() == 0) {
             throw new BookingValidationException("No booking for user with id " + user.getId());
         }

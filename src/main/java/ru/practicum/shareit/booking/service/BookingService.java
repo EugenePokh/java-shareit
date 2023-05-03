@@ -36,4 +36,6 @@ public interface BookingService {
     List<Booking> findAllByItemAndStatus(Item item, Booking.Status approved);
 
     Booking decideReservation(Booking booking, User user, Boolean approved);
+
+    List<Booking> findAllPastByBookerAndStatus(User user, Booking.Status status);
 }
