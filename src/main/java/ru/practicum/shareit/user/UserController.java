@@ -13,37 +13,21 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.validation.ValidationException;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
+
 @RestController
 @RequestMapping(path = "/users")
 @AllArgsConstructor
 public class UserController {
 
-    private final UserMapper userMapper;
     private final UserService userService;
-
-    private User toModel(UserPostDto userDto) {
-        User user = new User();
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        return user;
-    }
 
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@Validated @RequestBody UserPostDto userDto) {
-        if (userService.findByEmail(userDto.getEmail()).isPresent()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        User created = userService.save(toModel(userDto));
-        return new ResponseEntity<>(userMapper.toDto(created), HttpStatus.CREATED);
+         User created = userService.create(UserMapper.toModel(userDto));
+        return new ResponseEntity<>(UserMapper.toDto(created), HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}")
@@ -55,27 +39,20 @@ public class UserController {
         }
 
         if (userDto.getEmail() != null) {
-            Optional<User> userOpt = userService.findByEmail(userDto.getEmail());
-            if (userOpt.isPresent()) {
-                if (!Objects.equals(userOpt.get().getId(), id)) {
-                    throw new ValidationException("same email occupied");
-                }
-            }
             user.setEmail(userDto.getEmail());
         }
 
-
-        return userMapper.toDto(userService.save(user));
+        return UserMapper.toDto(userService.update(user));
     }
 
     @GetMapping
     public List<UserResponseDto> findAll() {
-        return userService.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
+        return userService.findAll().stream().map(UserMapper::toDto).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public UserResponseDto getById(@PathVariable Long id) {
-        return userMapper.toDto(userService.findById(id).orElseThrow(() -> new UserNotFoundException("No such user with id " + id)));
+        return UserMapper.toDto(userService.findById(id).orElseThrow(() -> new UserNotFoundException("No such user with id " + id)));
     }
 
     @DeleteMapping("/{id}")

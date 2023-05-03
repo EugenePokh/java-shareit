@@ -1,52 +1,54 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.*;
+import javax.validation.ValidationException;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@Primary
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    Map<Long, User> users = new HashMap<>();
-    private Long idCounter = 0L;
+    private final UserRepository userRepository;
 
     @Override
-    public void delete(User user) {
-        users.remove(user.getId());
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    public User create(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User update(User user) {
+        User origin = findById(user.getId()).get();
+
+        if (!user.getEmail().equals(origin.getEmail()) && findByEmail(user.getEmail()).isPresent()) {
+            throw new ValidationException("same email occupied");
+        }
+        return userRepository.save(user);
+    }
+
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(users.values());
+        return userRepository.findAll();
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(users.get(id));
-    }
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return users.values()
-                .stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
-    }
-
-    @Override
-    public User save(User user) {
-        if (user.getId() == null) {
-            user.setId(generateId());
-        }
-
-        users.put(user.getId(), user);
-
-        return user;
-    }
-
-    private Long generateId() {
-        idCounter++;
-        return idCounter;
+    public void delete(User user) {
+        userRepository.delete(user);
     }
 }

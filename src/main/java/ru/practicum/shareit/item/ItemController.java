@@ -2,11 +2,14 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemPatchDto;
-import ru.practicum.shareit.item.dto.ItemPostDto;
-import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemNotFoundException;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.service.UserNotFoundException;
@@ -15,13 +18,12 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
@@ -29,16 +31,27 @@ public class ItemController {
     private static final String USER_HEADER = "X-Sharer-User-Id";
 
     private final UserService userService;
+    private final BookingService bookingService;
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
-
+    private final CommentService commentService;
 
     @PostMapping
     public ItemResponseDto post(@Valid @RequestBody ItemPostDto itemDto,
                                 @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        Item item = toModel(itemDto, user);
-        return itemMapper.toDto(itemService.save(item));
+        Item item = ItemMapper.toModel(itemDto, user);
+        return ItemMapper.toDto(itemService.save(item));
+    }
+
+    @PostMapping("/{id}/comment")
+    public CommentResponseDto postComment(@Valid @RequestBody CommentRequestDto commentRequestDto,
+                               @PathVariable Long id,
+                               @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
+
+        Comment comment = commentService.createCommentForItem(item, user, commentRequestDto.getText());
+        return CommentMapper.toDto(comment);
     }
 
     @PatchMapping("/{id}")
@@ -47,22 +60,31 @@ public class ItemController {
                                  @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
-        Item patchItem = toModel(item, itemDto, user);
-        return itemMapper.toDto(itemService.save(patchItem));
+        Item patchItem = ItemMapper.toModel(item, itemDto, user);
+        return ItemMapper.toDto(itemService.save(patchItem));
     }
 
     @GetMapping
-    public List<ItemResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public List<ItemWithBookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        return itemService.findAllByUser(user)
+        List<ItemWithBookingResponseDto> dtos = itemService.findAllByUser(user)
                 .stream()
-                .map(itemMapper::toDto)
+                .map(ItemMapper::toDtoWithBooking)
+                .sorted(Comparator.comparing(ItemWithBookingResponseDto::getId))
                 .collect(Collectors.toList());
+
+        dtos.forEach(dto -> normalize(dto, user));
+
+        return dtos;
     }
 
     @GetMapping("/{id}")
-    public ItemResponseDto findById(@PathVariable Long id) {
-        return itemMapper.toDto(itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id)));
+    public ItemWithBookingResponseDto findById(@PathVariable Long id, @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        ItemWithBookingResponseDto dto = ItemMapper.toDtoWithBooking(itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id)));
+        normalize(dto, user);
+
+        return dto;
     }
 
     @GetMapping("/search")
@@ -70,44 +92,41 @@ public class ItemController {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemService.findAll()
-                .stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase()) || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .map(itemMapper::toDto)
+        return itemService.findAvailableByText(text).stream()
+                .map(ItemMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    private Item toModel(ItemPostDto itemDto, User user) {
-        Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setAvailable(itemDto.getAvailable());
-        item.setRequest(itemDto.getRequest());
-        item.setDescription(itemDto.getDescription());
-        item.setOwner(user);
-        return item;
+    private void normalize(ItemWithBookingResponseDto itemDto, User user) {
+        Item item = itemService.findById(itemDto.getId()).get();
+        itemDto.setComments(commentService.findAllByItem(item)
+                .stream()
+                .map(CommentMapper::toDto)
+                .collect(Collectors.toList()));
+
+        if (user.equals(item.getOwner())) {
+
+            List<Booking> bookings = bookingService.findAllByItemAndStatus(item, Booking.Status.APPROVED);
+            bookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                    .sorted(Comparator.comparing(Booking::getStart))
+                    .findFirst()
+                    .ifPresent(booking -> {
+                        itemDto.setNextBooking(new ItemWithBookingResponseDto.Booking());
+                        itemDto.getNextBooking().setId(booking.getId());
+                        itemDto.getNextBooking().setBookerId(booking.getBooker().getId());
+                    });
+
+            bookings.stream()
+                    .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
+                    .sorted(Comparator.comparing(Booking::getStart).reversed())
+                    .findFirst()
+                    .ifPresent(booking -> {
+                        itemDto.setLastBooking(new ItemWithBookingResponseDto.Booking());
+                        itemDto.getLastBooking().setId(booking.getId());
+                        itemDto.getLastBooking().setBookerId(booking.getBooker().getId());
+                    });
+        }
     }
 
-    private Item toModel(Item item, ItemPatchDto itemDto, User user) {
-        if (!item.getOwner().equals(user)) {
-            throw new UserNotFoundException("No item owner");
-        }
-        if (itemDto.getName() != null) {
-            item.setName(itemDto.getName());
-        }
-
-        if (itemDto.getDescription() != null) {
-            item.setDescription(itemDto.getDescription());
-        }
-
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
-        }
-
-        if (itemDto.getRequest() != null) {
-            item.setRequest(itemDto.getRequest());
-        }
-
-        return item;
-    }
 }

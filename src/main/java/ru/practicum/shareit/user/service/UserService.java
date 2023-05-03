@@ -9,7 +9,9 @@ public interface UserService {
 
     Optional<User> findById(Long id);
 
-    User save(User user);
+    User create(User user);
+
+    User update(User user);
 
     Optional<User> findByEmail(String email);
 
