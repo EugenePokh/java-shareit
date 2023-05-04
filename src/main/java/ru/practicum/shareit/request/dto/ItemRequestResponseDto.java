@@ -1,0 +1,15 @@
+package ru.practicum.shareit.request.dto;
+
+import lombok.Data;
+import ru.practicum.shareit.user.model.User;
+
+import java.time.LocalDateTime;
+
+@Data
+public class ItemRequestResponseDto {
+    private Long id;
+    private String description;
+    private User requestor;
+    private LocalDateTime created;
+    //todo добавить список ответов на зпрос вещи
+}

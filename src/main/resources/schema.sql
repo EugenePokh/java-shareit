@@ -5,12 +5,6 @@ create table if not exists users (
     CONSTRAINT users_unique_email UNIQUE (email)
 );
 
-create table if not exists requests (
-    id BIGSERIAL primary key,
-    description varchar,
-    requestor_id BIGINT REFERENCES users (id)
-);
-
 create table if not exists items (
     id BIGSERIAL primary key,
     name varchar,
@@ -33,6 +27,13 @@ create table if not exists comments (
     id BIGSERIAL primary key,
     text varchar,
     item_id BIGINT REFERENCES items (id),
+    author_id BIGINT REFERENCES users (id),
+    created timestamp
+);
+
+create table if not exists requests (
+    id BIGSERIAL primary key,
+    description varchar,
     author_id BIGINT REFERENCES users (id),
     created timestamp
 );
