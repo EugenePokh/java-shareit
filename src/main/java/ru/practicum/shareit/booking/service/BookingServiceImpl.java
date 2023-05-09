@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
@@ -25,53 +26,53 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> findAllByBooker(User user) {
-        return bookingRepository.findAllByBooker(user);
+    public List<Booking> findAllByBooker(User user, PageRequest page) {
+        return bookingRepository.findAllByBooker(user, page);
     }
 
     @Override
-    public List<Booking> findAllByBookerAndStatus(User user, Booking.Status waiting) {
-        return bookingRepository.findAllByBookerAndStatus(user, waiting);
+    public List<Booking> findAllByBookerAndStatus(User user, Booking.Status waiting, PageRequest page) {
+        return bookingRepository.findAllByBookerAndStatus(user, waiting, page);
     }
 
     @Override
-    public List<Booking> findAllCurrentByBooker(User user) {
-        return bookingRepository.findAllCurrentByBooker(user);
+    public List<Booking> findAllCurrentByBooker(User user, PageRequest page) {
+        return bookingRepository.findAllCurrentByBooker(user, page);
     }
 
     @Override
-    public List<Booking> findAllPastByBooker(User user) {
-        return bookingRepository.findAllPastByBooker(user);
+    public List<Booking> findAllPastByBooker(User user, PageRequest page) {
+        return bookingRepository.findAllPastByBooker(user, page);
     }
 
     @Override
-    public List<Booking> findAllFutureByBooker(User user) {
-        return bookingRepository.findAllFutureByBooker(user);
+    public List<Booking> findAllFutureByBooker(User user, PageRequest page) {
+        return bookingRepository.findAllFutureByBooker(user, page);
     }
 
     @Override
-    public List<Booking> findAllByOwner(User user) {
-        return bookingRepository.findAllByOwner(user);
+    public List<Booking> findAllByOwner(User user, PageRequest page) {
+        return bookingRepository.findAllByOwner(user, page);
     }
 
     @Override
-    public List<Booking> findAllByOwnerAndStatus(User user, Booking.Status waiting) {
-        return bookingRepository.findAllByOwnerAndStatus(user, waiting);
+    public List<Booking> findAllByOwnerAndStatus(User user, Booking.Status waiting, PageRequest page) {
+        return bookingRepository.findAllByOwnerAndStatus(user, waiting, page);
     }
 
     @Override
-    public List<Booking> findAllCurrentByOwner(User user) {
-        return bookingRepository.findAllCurrentByOwner(user);
+    public List<Booking> findAllCurrentByOwner(User user, PageRequest page) {
+        return bookingRepository.findAllCurrentByOwner(user, page);
     }
 
     @Override
-    public List<Booking> findAllPastByOwner(User user) {
+    public List<Booking> findAllPastByOwner(User user, PageRequest page) {
         return bookingRepository.findAllPastByOwner(user);
     }
 
     @Override
-    public List<Booking> findAllFutureByOwner(User user) {
-        return bookingRepository.findAllFutureByOwner(user);
+    public List<Booking> findAllFutureByOwner(User user, PageRequest page) {
+        return bookingRepository.findAllFutureByOwner(user, page);
     }
 
     @Override

@@ -12,6 +12,9 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.CommentService;
 import ru.practicum.shareit.item.service.ItemNotFoundException;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.service.ItemRequestNotFoundException;
+import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -34,12 +37,20 @@ public class ItemController {
     private final BookingService bookingService;
     private final ItemService itemService;
     private final CommentService commentService;
+    private final ItemRequestService itemRequestService;
 
     @PostMapping
     public ItemResponseDto post(@Valid @RequestBody ItemPostDto itemDto,
                                 @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        Item item = ItemMapper.toModel(itemDto, user);
+
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestService.findById(itemDto.getRequestId()).orElseThrow(() -> new ItemRequestNotFoundException("No itemRequest by id " + itemDto.getRequestId()));
+        }
+
+        Item item = ItemMapper.toModel(itemDto, user, itemRequest);
+
         return ItemMapper.toDto(itemService.save(item));
     }
 

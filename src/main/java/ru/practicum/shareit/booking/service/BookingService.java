@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -11,25 +12,25 @@ public interface BookingService {
 
     Optional<Booking> findById(Long bookingId);
 
-    List<Booking> findAllByBooker(User user);
+    List<Booking> findAllByBooker(User user, PageRequest page);
 
-    List<Booking> findAllByBookerAndStatus(User user, Booking.Status waiting);
+    List<Booking> findAllByBookerAndStatus(User user, Booking.Status waiting, PageRequest page);
 
-    List<Booking> findAllCurrentByBooker(User user);
+    List<Booking> findAllCurrentByBooker(User user, PageRequest page);
 
-    List<Booking> findAllPastByBooker(User user);
+    List<Booking> findAllPastByBooker(User user, PageRequest page);
 
-    List<Booking> findAllFutureByBooker(User user);
+    List<Booking> findAllFutureByBooker(User user, PageRequest page);
 
-    List<Booking> findAllByOwner(User user);
+    List<Booking> findAllByOwner(User user, PageRequest page);
 
-    List<Booking> findAllByOwnerAndStatus(User user, Booking.Status waiting);
+    List<Booking> findAllByOwnerAndStatus(User user, Booking.Status waiting, PageRequest page);
 
-    List<Booking> findAllCurrentByOwner(User user);
+    List<Booking> findAllCurrentByOwner(User user, PageRequest page);
 
-    List<Booking> findAllPastByOwner(User user);
+    List<Booking> findAllPastByOwner(User user, PageRequest page);
 
-    List<Booking> findAllFutureByOwner(User user);
+    List<Booking> findAllFutureByOwner(User user, PageRequest page);
 
     Booking createReservation(Booking booking);
 

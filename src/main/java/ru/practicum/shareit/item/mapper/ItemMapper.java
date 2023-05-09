@@ -5,6 +5,7 @@ import ru.practicum.shareit.item.dto.ItemPostDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 
@@ -16,6 +17,11 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setAvailable(item.getAvailable());
         itemDto.setDescription(item.getDescription());
+
+        if (item.getRequest() != null) {
+            itemDto.setRequestId(item.getRequest().getId());
+        }
+
         return itemDto;
     }
 
@@ -29,12 +35,15 @@ public class ItemMapper {
         return itemDto;
     }
 
-    public static Item toModel(ItemPostDto itemDto, User user) {
+    public static Item toModel(ItemPostDto itemDto, User user, ItemRequest itemRequest) {
         Item item = new Item();
         item.setName(itemDto.getName());
         item.setAvailable(itemDto.getAvailable());
-        //todo
-        //item.setRequest(itemDto.getRequest());
+
+        if (itemRequest != null) {
+            item.setRequest(itemRequest);
+        }
+
         item.setDescription(itemDto.getDescription());
         item.setOwner(user);
         return item;
@@ -54,11 +63,6 @@ public class ItemMapper {
 
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
-        }
-
-        if (itemDto.getRequest() != null) {
-            //todo
-            //item.setRequest(itemDto.getRequest());
         }
 
         return item;
