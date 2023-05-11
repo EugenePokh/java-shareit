@@ -41,11 +41,9 @@ class UserControllerTest {
         String name = "test";
         String email = "test@mail.ru";
 
-        Mockito.when(userService.create(User.builder()
-                        .name(name)
-                        .email(email)
-                        .build()))
+        Mockito.when(userService.create(Mockito.any()))
                 .thenReturn(User.builder()
+                        .id(1L)
                         .name(name)
                         .email(email)
                         .id(1L).build());

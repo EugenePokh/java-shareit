@@ -13,8 +13,10 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.service.BookingValidationException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +48,8 @@ class CommentServiceImplTest {
     void findAllByItem() {
         Item item = Item.builder()
                 .name("some item")
+                .description("description")
+                .available(true)
                 .build();
         item = entityManager.persistAndFlush(item);
 
@@ -53,6 +57,7 @@ class CommentServiceImplTest {
                 .text("some text")
                 .author(null)
                 .item(item)
+                .created(LocalDateTime.now())
                 .build();
         Comment created = entityManager.persistAndFlush(comment);
 
@@ -66,10 +71,15 @@ class CommentServiceImplTest {
 
         Item item = Item.builder()
                 .name("some item")
+                .description("description")
+                .available(true)
                 .build();
         item = entityManager.persistAndFlush(item);
 
-        User user = User.builder().build();
+        User user = User.builder()
+                .name("name")
+                .email("email@email.com")
+                .build();
         Mockito.when(bookingService.findAllPastByBookerAndStatus(user, Booking.Status.APPROVED))
                 .thenReturn(Arrays.asList(Booking.builder().build()));
 
@@ -85,9 +95,14 @@ class CommentServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .name("some item")
+                .description("description")
+                .available(true)
                 .build());
 
-        User user = User.builder().build();
+        User user = User.builder()
+                .name("name")
+                .email("email@email.com")
+                .build();
         Mockito.when(bookingService.findAllPastByBookerAndStatus(user, Booking.Status.APPROVED))
                 .thenReturn(new ArrayList<>());
         assertThrows(BookingValidationException.class, () -> {

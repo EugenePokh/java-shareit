@@ -7,9 +7,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,7 @@ class ItemServiceImplTest {
     void findAllByRequest() {
         ItemRequest itemRequest = ItemRequest.builder()
                 .description("some request")
+                .created(LocalDateTime.now())
                 .build();
         itemRequest = entityManager.persistAndFlush(itemRequest);
 

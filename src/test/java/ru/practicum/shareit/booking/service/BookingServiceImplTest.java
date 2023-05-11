@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -43,6 +44,9 @@ class BookingServiceImplTest {
     @Test
     void findById() {
         Booking booking = entityManager.persistAndFlush(Booking.builder()
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         Optional<Booking> created = bookingService.findById(booking.getId());
@@ -58,6 +62,9 @@ class BookingServiceImplTest {
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .booker(user)
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         List<Booking> list = bookingService.findAllByBooker(user, PageRequest.of(0, 5));
@@ -74,6 +81,8 @@ class BookingServiceImplTest {
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .booker(user)
                 .status(Booking.Status.APPROVED)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         List<Booking> list = bookingService.findAllByBookerAndStatus(user, Booking.Status.APPROVED, PageRequest.of(0, 5));
@@ -91,6 +100,7 @@ class BookingServiceImplTest {
                 .booker(user)
                 .start(LocalDateTime.now().minusDays(1))
                 .end(LocalDateTime.now().plusDays(1))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllCurrentByBooker(user, PageRequest.of(0, 5));
@@ -108,6 +118,7 @@ class BookingServiceImplTest {
                 .booker(user)
                 .start(LocalDateTime.now().minusDays(2))
                 .end(LocalDateTime.now().minusDays(1))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllPastByBooker(user, PageRequest.of(0, 5));
@@ -125,6 +136,7 @@ class BookingServiceImplTest {
                 .booker(user)
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllFutureByBooker(user, PageRequest.of(0, 5));
@@ -140,11 +152,18 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
+
 
         List<Booking> list = bookingService.findAllByOwner(user, PageRequest.of(0, 5));
         assertEquals(Arrays.asList(booking), list);
@@ -160,11 +179,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .status(Booking.Status.APPROVED)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         List<Booking> list = bookingService.findAllByOwnerAndStatus(user, Booking.Status.APPROVED, PageRequest.of(0, 5));
@@ -180,12 +204,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .start(LocalDateTime.now().minusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllCurrentByOwner(user, PageRequest.of(0, 5));
@@ -201,12 +229,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .start(LocalDateTime.now().minusDays(2))
                 .end(LocalDateTime.now().minusDays(1))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllPastByOwner(user, PageRequest.of(0, 5));
@@ -222,12 +254,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
+                .status(Booking.Status.WAITING)
                 .build());
 
         List<Booking> list = bookingService.findAllFutureByOwner(user, PageRequest.of(0, 5));
@@ -248,11 +284,17 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = Booking.builder()
                 .item(item)
                 .booker(user1)
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build();
 
         Booking created = bookingService.createReservation(booking);
@@ -268,11 +310,17 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = Booking.builder()
                 .item(item)
                 .booker(user)
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build();
 
         assertThrows(BookingNotFoundException.class, () -> {
@@ -289,11 +337,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .status(Booking.Status.APPROVED)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         List<Booking> list = bookingService.findAllByItemAndStatus(item, Booking.Status.APPROVED);
@@ -309,11 +362,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         Booking created = bookingService.decideReservation(booking, user, true);
@@ -330,11 +388,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         Booking created = bookingService.decideReservation(booking, user, false);
@@ -350,11 +413,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
                 .status(Booking.Status.APPROVED)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         assertThrows(BookingValidationException.class, () -> {
@@ -376,10 +444,16 @@ class BookingServiceImplTest {
 
         Item item = entityManager.persistAndFlush(Item.builder()
                 .owner(user)
+                .name("name")
+                .description("description")
+                .available(true)
                 .build());
 
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .item(item)
+                .status(Booking.Status.WAITING)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now())
                 .build());
 
         assertThrows(BookingNotFoundException.class, () -> {

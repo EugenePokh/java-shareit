@@ -59,7 +59,9 @@ public class ItemRequestController {
     @GetMapping("/{requestId}")
     public ItemRequestResponseDto findById(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
                                            @PathVariable("requestId") Long id) {
-        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        if (!userService.existsById(userId)) {
+            throw new UserNotFoundException("No user by id " + userId);
+        }
         ItemRequest itemRequest = itemRequestService.findById(id).orElseThrow(() -> new ItemRequestNotFoundException("No itemRequest by id " + id));
         List<Item> items = itemService.findAllByRequest(itemRequest);
         return ItemRequestMapper.toDto(itemRequest, items);

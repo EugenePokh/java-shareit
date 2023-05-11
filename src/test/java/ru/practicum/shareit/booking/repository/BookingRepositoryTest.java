@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.service;
+package ru.practicum.shareit.booking.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -35,18 +36,21 @@ class BookingRepositoryTest {
                 .start(LocalDateTime.now().minusDays(1))
                 .end(LocalDateTime.now().plusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking2 = Booking.builder()
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking3 = Booking.builder()
                 .start(LocalDateTime.now().minusDays(3))
                 .end(LocalDateTime.now().minusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         booking1 = entityManager.merge(booking1);
@@ -71,18 +75,21 @@ class BookingRepositoryTest {
                 .start(LocalDateTime.now().minusDays(1))
                 .end(LocalDateTime.now().plusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking2 = Booking.builder()
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking3 = Booking.builder()
                 .start(LocalDateTime.now().minusDays(3))
                 .end(LocalDateTime.now().minusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         booking1 = entityManager.merge(booking1);
@@ -107,18 +114,21 @@ class BookingRepositoryTest {
                 .start(LocalDateTime.now().minusDays(1))
                 .end(LocalDateTime.now().plusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking2 = Booking.builder()
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(2))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         Booking booking3 = Booking.builder()
                 .start(LocalDateTime.now().minusDays(3))
                 .end(LocalDateTime.now().minusDays(1))
                 .booker(user)
+                .status(Booking.Status.WAITING)
                 .build();
 
         booking1 = entityManager.merge(booking1);
@@ -129,26 +139,6 @@ class BookingRepositoryTest {
         List<Booking> bookings = bookingRepository.findAllFutureByBooker(user, pageRequest);
         assertEquals(1, bookings.size());
         assertEquals(booking2, bookings.get(0));
-    }
-
-    @Test
-    void findAllByOwner() {
-    }
-
-    @Test
-    void findAllByOwnerAndStatus() {
-    }
-
-    @Test
-    void findAllCurrentByOwner() {
-    }
-
-    @Test
-    void findAllPastByOwner() {
-    }
-
-    @Test
-    void findAllFutureByOwner() {
     }
 
     @Test

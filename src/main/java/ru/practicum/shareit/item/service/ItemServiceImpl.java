@@ -2,8 +2,10 @@ package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
@@ -34,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> findAllByUser(User user) {
-        return itemRepository.findAllByOwner(user);
+        return itemRepository.findAllByOwner(user, Sort.by("id").ascending());
     }
 
     @Override

@@ -81,7 +81,6 @@ public class ItemController {
         List<ItemWithBookingResponseDto> dtos = itemService.findAllByUser(user)
                 .stream()
                 .map(ItemMapper::toDtoWithBooking)
-                .sorted(Comparator.comparing(ItemWithBookingResponseDto::getId))
                 .collect(Collectors.toList());
 
         dtos.forEach(dto -> normalize(dto, user));
@@ -110,6 +109,7 @@ public class ItemController {
 
     private void normalize(ItemWithBookingResponseDto itemDto, User user) {
         Item item = itemService.findById(itemDto.getId()).get();
+
         itemDto.setComments(commentService.findAllByItem(item)
                 .stream()
                 .map(CommentMapper::toDto)

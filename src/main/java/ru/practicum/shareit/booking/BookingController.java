@@ -3,8 +3,6 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
@@ -24,9 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -120,6 +116,8 @@ public class BookingController {
             case REJECTED:
                 bookings = bookingService.findAllByBookerAndStatus(user, Booking.Status.REJECTED, page);
                 break;
+            default:
+                throw new BookingValidationException("No solution state: " + state);
         }
 
         return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
@@ -161,18 +159,12 @@ public class BookingController {
             case REJECTED:
                 bookings = bookingService.findAllByOwnerAndStatus(user, Booking.Status.REJECTED, page);
                 break;
+            default:
+                throw new BookingValidationException("No solution state: " + state);
         }
 
         return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
 
     }
-
-    @ExceptionHandler(BookingValidationException.class)
-    public ResponseEntity<Object> handleException(BookingValidationException ex) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
 
 }

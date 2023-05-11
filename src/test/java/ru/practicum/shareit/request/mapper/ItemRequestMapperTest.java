@@ -7,6 +7,7 @@ import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,11 +17,15 @@ class ItemRequestMapperTest {
     @Test
     void toDto() {
         ItemRequest itemRequest = ItemRequest.builder()
+                .id(1L)
                 .description("some")
+                .created(LocalDateTime.now())
                 .build();
         Item item = Item.builder().build();
         ItemRequestResponseDto dto = ItemRequestMapper.toDto(itemRequest, Arrays.asList(item));
-        assertNotNull(dto);
+        assertEquals(itemRequest.getDescription(), dto.getDescription());
+        assertEquals(itemRequest.getCreated(), dto.getCreated());
+        assertEquals(itemRequest.getId(), dto.getId());
     }
 
     @Test
@@ -31,10 +36,11 @@ class ItemRequestMapperTest {
         ItemRequest itemRequest = ItemRequestMapper.toModel(
                 dto,
                 User.builder()
+                        .id(1L)
                         .email("test@mail.ru")
                         .name("some")
                         .build());
 
-        assertNotNull(itemRequest);
+        assertEquals(dto.getDescription(), itemRequest.getDescription());
     }
 }

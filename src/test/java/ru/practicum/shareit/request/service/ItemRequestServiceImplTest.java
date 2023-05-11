@@ -9,8 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,7 @@ class ItemRequestServiceImplTest {
         String text = "some description";
         ItemRequest created = itemRequestService.create(ItemRequest.builder()
                 .description(text)
+                .created(LocalDateTime.now())
                 .build());
 
         assertNotNull(created);
@@ -56,6 +59,7 @@ class ItemRequestServiceImplTest {
         ItemRequest itemRequest = entityManager.persistAndFlush(ItemRequest.builder()
                 .requestor(user)
                 .description("some")
+                .created(LocalDateTime.now())
                 .build());
 
         List<ItemRequest> list = itemRequestService.findAllByRequestor(user, Sort.by("created").descending());
@@ -78,6 +82,7 @@ class ItemRequestServiceImplTest {
         ItemRequest itemRequest = entityManager.persistAndFlush(ItemRequest.builder()
                 .requestor(user)
                 .description("some")
+                .created(LocalDateTime.now())
                 .build());
 
         List<ItemRequest> list = itemRequestService.findAllOtherRequestors(user1, PageRequest.of(0, 10));
@@ -88,6 +93,7 @@ class ItemRequestServiceImplTest {
     void findById() {
         ItemRequest request = entityManager.persistAndFlush(ItemRequest.builder()
                 .description("some description")
+                .created(LocalDateTime.now())
                 .build());
 
         Optional<ItemRequest> created = itemRequestService.findById(request.getId());

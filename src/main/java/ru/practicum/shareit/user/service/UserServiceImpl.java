@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.validation.ValidationException;
 import java.util.List;
@@ -15,6 +16,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    @Override
+    public boolean existsById(Long id) {
+        return userRepository.existsById(id);
+    }
 
     @Override
     public Optional<User> findById(Long id) {

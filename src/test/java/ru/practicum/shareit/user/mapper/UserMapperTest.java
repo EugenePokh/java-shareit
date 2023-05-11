@@ -15,16 +15,20 @@ class UserMapperTest {
         dto.setName("some");
         dto.setEmail("test@mail.ru");
         User user = UserMapper.toModel(dto);
-        assertNotNull(user);
+        assertEquals(dto.getName(), user.getName());
+        assertEquals(dto.getEmail(), user.getEmail());
     }
 
     @Test
     void toDto() {
         User user = User.builder()
+                .id(1L)
                 .name("some")
                 .email("test@mail.ru")
                 .build();
         UserResponseDto dto = UserMapper.toDto(user);
-        assertNotNull(dto);
+        assertEquals(user.getName(), dto.getName());
+        assertEquals(user.getEmail(), dto.getEmail());
+        assertEquals(user.getId(), dto.getId());
     }
 }

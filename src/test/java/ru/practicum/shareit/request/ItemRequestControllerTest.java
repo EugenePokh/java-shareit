@@ -132,8 +132,8 @@ class ItemRequestControllerTest {
                 .email("test@mail.ru")
                 .build();
 
-        Mockito.when(userService.findById(1L))
-                .thenReturn(Optional.of(user));
+        Mockito.when(userService.existsById(1L))
+                .thenReturn(true);
 
         Mockito.when(itemRequestService.findById(1L))
                 .thenReturn(Optional.of(itemRequest));
