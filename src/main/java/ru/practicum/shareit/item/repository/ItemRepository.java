@@ -13,8 +13,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findAllByOwner(User user, Sort sort);
 
-    @Query("select i from Item i where i.available = true and (lower(i.name) like lower(concat('%', ?1, '%')) or lower(i.description) like lower(concat('%', ?1, '%')))")
+    @Query("select i from Item i " +
+            "where i.available = true and (lower(i.name) like lower(concat('%', ?1, '%')) " +
+            "or lower(i.description) like lower(concat('%', ?1, '%')))")
     List<Item> findAllByText(String name);
 
     List<Item> findAllByRequest(ItemRequest request);
+
+    List<Item> findAllByRequestIn(List<ItemRequest> requests);
 }

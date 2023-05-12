@@ -21,7 +21,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -74,11 +74,20 @@ public class ItemRequestController {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         PageRequest page = PageRequest.of(from / size, size, Sort.by("created").descending());
         List<ItemRequest> itemRequests = itemRequestService.findAllOtherRequestors(user, page);
-        return itemRequests.stream()
-                .map(request -> {
-                    List<Item> items = itemService.findAllByRequest(request);
-                    return ItemRequestMapper.toDto(request, items);
-                })
+
+        Map<ItemRequest, List<Item>> itemMap = new HashMap<>();
+        itemService.findAllByRequests(itemRequests)
+                .forEach(item -> itemMap.merge(item.getRequest(), Arrays.asList(item), (prev, newOne) -> {
+                    List<Item> res = new ArrayList<>();
+                    res.addAll(prev);
+                    res.addAll(newOne);
+
+                    return res;
+                }));
+
+        return itemMap.entrySet()
+                .stream()
+                .map(entry -> ItemRequestMapper.toDto(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 

@@ -37,11 +37,7 @@ class BookingServiceImplTest {
         }
     }
 
-    @Test
-    void findAllPastByBookerAndStatus() {
-    }
-
-    @Test
+   @Test
     void findById() {
         Booking booking = entityManager.persistAndFlush(Booking.builder()
                 .status(Booking.Status.WAITING)

@@ -20,4 +20,6 @@ public interface ItemService {
     List<Item> findAll();
 
     List<Item> findAvailableByText(String text);
+
+    List<Item> findAllByRequests(List<ItemRequest> itemRequests);
 }

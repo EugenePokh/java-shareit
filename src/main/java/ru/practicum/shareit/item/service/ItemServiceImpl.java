@@ -35,6 +35,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public List<Item> findAllByRequests(List<ItemRequest> itemRequests) {
+        return itemRepository.findAllByRequestIn(itemRequests);
+    }
+
+    @Override
     public List<Item> findAllByUser(User user) {
         return itemRepository.findAllByOwner(user, Sort.by("id").ascending());
     }

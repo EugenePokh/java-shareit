@@ -26,6 +26,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public List<Comment> findAllByItemIn(List<Item> items) {
+        return commentRepository.findAllByItemIn(items);
+    }
+
+    @Override
     public Comment createCommentForItem(Item item, User user, String text) {
         List<Booking> bookingList = bookingService.findAllPastByBookerAndStatus(user, Booking.Status.APPROVED);
 

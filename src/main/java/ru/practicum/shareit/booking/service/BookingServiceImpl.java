@@ -22,6 +22,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<Booking> findAllByItemIn(List<Item> items) {
+        return bookingRepository.findAllByItemIn(items);
+    }
+
+    @Override
     public Optional<Booking> findById(Long id) {
         return bookingRepository.findById(id);
     }

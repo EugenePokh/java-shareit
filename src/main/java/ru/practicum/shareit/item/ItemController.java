@@ -21,10 +21,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -56,8 +53,8 @@ public class ItemController {
 
     @PostMapping("/{id}/comment")
     public CommentResponseDto postComment(@Valid @RequestBody CommentRequestDto commentRequestDto,
-                               @PathVariable Long id,
-                               @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+                                          @PathVariable Long id,
+                                          @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
 
@@ -78,23 +75,42 @@ public class ItemController {
     @GetMapping
     public List<ItemWithBookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        List<ItemWithBookingResponseDto> dtos = itemService.findAllByUser(user)
-                .stream()
-                .map(ItemMapper::toDtoWithBooking)
+        List<Item> items = itemService.findAllByUser(user);
+
+        Map<Item, List<Comment>> commentMap = new HashMap<>();
+        commentService.findAllByItemIn(items)
+                .forEach(comment -> commentMap.merge(comment.getItem(), Arrays.asList(comment), (prev, newOne) -> {
+                    List<Comment> res = new ArrayList<>();
+                    res.addAll(prev);
+                    res.addAll(newOne);
+
+                    return res;
+                }));
+
+        Map<Item, List<Booking>> bookingMap = new HashMap<>();
+        bookingService.findAllByItemIn(items)
+                .forEach(booking -> bookingMap.merge(booking.getItem(), Arrays.asList(booking), (prev, newOne) -> {
+                    List<Booking> res = new ArrayList<>();
+                    res.addAll(prev);
+                    res.addAll(newOne);
+
+                    return res;
+                }));
+
+        return items.stream()
+                .map(item -> ItemMapper.toDtoWithBooking(item, commentMap.get(item), bookingMap.get(item), user))
                 .collect(Collectors.toList());
 
-        dtos.forEach(dto -> normalize(dto, user));
-
-        return dtos;
     }
 
     @GetMapping("/{id}")
     public ItemWithBookingResponseDto findById(@PathVariable Long id, @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        ItemWithBookingResponseDto dto = ItemMapper.toDtoWithBooking(itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id)));
-        normalize(dto, user);
+        Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
+        List<Comment> comments = commentService.findAllByItem(item);
+        List<Booking> bookings = bookingService.findAllByItemIn(Arrays.asList(item));
 
-        return dto;
+        return ItemMapper.toDtoWithBooking(item, comments, bookings, user);
     }
 
     @GetMapping("/search")
@@ -105,39 +121,6 @@ public class ItemController {
         return itemService.findAvailableByText(text).stream()
                 .map(ItemMapper::toDto)
                 .collect(Collectors.toList());
-    }
-
-    private void normalize(ItemWithBookingResponseDto itemDto, User user) {
-        Item item = itemService.findById(itemDto.getId()).get();
-
-        itemDto.setComments(commentService.findAllByItem(item)
-                .stream()
-                .map(CommentMapper::toDto)
-                .collect(Collectors.toList()));
-
-        if (user.equals(item.getOwner())) {
-
-            List<Booking> bookings = bookingService.findAllByItemAndStatus(item, Booking.Status.APPROVED);
-            bookings.stream()
-                    .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .findFirst()
-                    .ifPresent(booking -> {
-                        itemDto.setNextBooking(new ItemWithBookingResponseDto.Booking());
-                        itemDto.getNextBooking().setId(booking.getId());
-                        itemDto.getNextBooking().setBookerId(booking.getBooker().getId());
-                    });
-
-            bookings.stream()
-                    .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                    .sorted(Comparator.comparing(Booking::getStart).reversed())
-                    .findFirst()
-                    .ifPresent(booking -> {
-                        itemDto.setLastBooking(new ItemWithBookingResponseDto.Booking());
-                        itemDto.getLastBooking().setId(booking.getId());
-                        itemDto.getLastBooking().setBookerId(booking.getBooker().getId());
-                    });
-        }
     }
 
 }

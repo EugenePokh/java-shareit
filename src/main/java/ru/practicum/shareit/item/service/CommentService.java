@@ -11,4 +11,6 @@ public interface CommentService {
     Comment createCommentForItem(Item item, User user, String comment);
 
     List<Comment> findAllByItem(Item item);
+
+    List<Comment> findAllByItemIn(List<Item> items);
 }

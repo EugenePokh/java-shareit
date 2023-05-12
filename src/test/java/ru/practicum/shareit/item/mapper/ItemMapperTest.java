@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.item.dto.ItemPatchDto;
 import ru.practicum.shareit.item.dto.ItemPostDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -43,18 +42,6 @@ class ItemMapperTest {
         assertEquals(item.getName(), dto.getName());
         assertEquals(item.getDescription(), dto.getDescription());
         assertEquals(item.getAvailable(), dto.getAvailable());
-    }
-
-    @Test
-    void toDtoWithBooking() {
-        Item item = Item.builder()
-                .name("some name")
-                .description("some description")
-                .available(true)
-                .build();
-
-        ItemWithBookingResponseDto dto = ItemMapper.toDtoWithBooking(item);
-        assertNotNull(dto);
     }
 
     @Test
