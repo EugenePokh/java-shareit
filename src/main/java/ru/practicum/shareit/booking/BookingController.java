@@ -1,8 +1,9 @@
 package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -19,12 +20,13 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
+@Validated
 @RequestMapping(path = "/bookings")
 @AllArgsConstructor
 public class BookingController {
@@ -42,6 +44,7 @@ public class BookingController {
     @PostMapping
     public BookingResponseDto post(@Valid @RequestBody BookingRequestDto bookingRequestDto,
                                    @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Booking booking = BookingMapper.toModel(bookingRequestDto);
         if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart()) || bookingRequestDto.getEnd().isEqual(bookingRequestDto.getStart())) {
             throw new BookingValidationException("Incorrect start and end dates");
@@ -50,7 +53,7 @@ public class BookingController {
         if (!booking.getItem().getAvailable()) {
             throw new BookingValidationException("Cannot work with unavailable item");
         }
-        booking.setBooker(userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId)));
+        booking.setBooker(user);
 
         return BookingMapper.toDto(bookingService.createReservation(booking));
 
@@ -80,8 +83,11 @@ public class BookingController {
 
     @GetMapping
     public List<BookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
-                                            @RequestParam(defaultValue = "ALL", name = "state") String stateName) {
+                                            @RequestParam(defaultValue = "ALL", name = "state") String stateName,
+                                            @Valid @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
+                                            @Valid @Positive @RequestParam(required = false, defaultValue = "20") Integer size) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
 
         State state;
         try {
@@ -90,25 +96,25 @@ public class BookingController {
             throw new BookingValidationException("Unknown state: " + stateName);
         }
 
-        List<Booking> bookings;
+        List<Booking> bookings = null;
         switch (state) {
             case ALL:
-                bookings = bookingService.findAllByBooker(user);
+                bookings = bookingService.findAllByBooker(user, page);
                 break;
             case CURRENT:
-                bookings = bookingService.findAllCurrentByBooker(user);
+                bookings = bookingService.findAllCurrentByBooker(user, page);
                 break;
             case PAST:
-                bookings = bookingService.findAllPastByBooker(user);
+                bookings = bookingService.findAllPastByBooker(user, page);
                 break;
             case FUTURE:
-                bookings = bookingService.findAllFutureByBooker(user);
+                bookings = bookingService.findAllFutureByBooker(user, page);
                 break;
             case WAITING:
-                bookings = bookingService.findAllByBookerAndStatus(user, Booking.Status.WAITING);
+                bookings = bookingService.findAllByBookerAndStatus(user, Booking.Status.WAITING, page);
                 break;
             case REJECTED:
-                bookings = bookingService.findAllByBookerAndStatus(user, Booking.Status.REJECTED);
+                bookings = bookingService.findAllByBookerAndStatus(user, Booking.Status.REJECTED, page);
                 break;
             default:
                 throw new BookingValidationException("No solution state: " + state);
@@ -120,8 +126,11 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingResponseDto> findAllByOwner(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
-                                                   @RequestParam(defaultValue = "ALL", name = "state") String stateName) {
+                                                   @RequestParam(defaultValue = "ALL", name = "state") String stateName,
+                                                   @Valid @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                   @Valid @Positive @RequestParam(required = false, defaultValue = "20") Integer size) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
+        PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
 
         State state;
         try {
@@ -130,25 +139,25 @@ public class BookingController {
             throw new BookingValidationException("Unknown state: " + stateName);
         }
 
-        List<Booking> bookings;
+        List<Booking> bookings = null;
         switch (state) {
             case ALL:
-                bookings = bookingService.findAllByOwner(user);
+                bookings = bookingService.findAllByOwner(user, page);
                 break;
             case CURRENT:
-                bookings = bookingService.findAllCurrentByOwner(user);
+                bookings = bookingService.findAllCurrentByOwner(user, page);
                 break;
             case PAST:
-                bookings = bookingService.findAllPastByOwner(user);
+                bookings = bookingService.findAllPastByOwner(user, page);
                 break;
             case FUTURE:
-                bookings = bookingService.findAllFutureByOwner(user);
+                bookings = bookingService.findAllFutureByOwner(user, page);
                 break;
             case WAITING:
-                bookings = bookingService.findAllByOwnerAndStatus(user, Booking.Status.WAITING);
+                bookings = bookingService.findAllByOwnerAndStatus(user, Booking.Status.WAITING, page);
                 break;
             case REJECTED:
-                bookings = bookingService.findAllByOwnerAndStatus(user, Booking.Status.REJECTED);
+                bookings = bookingService.findAllByOwnerAndStatus(user, Booking.Status.REJECTED, page);
                 break;
             default:
                 throw new BookingValidationException("No solution state: " + state);
@@ -157,13 +166,5 @@ public class BookingController {
         return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
 
     }
-
-    @ExceptionHandler(BookingValidationException.class)
-    public ResponseEntity<Object> handleException(BookingValidationException ex) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
 
 }

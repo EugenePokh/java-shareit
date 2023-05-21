@@ -1,13 +1,17 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Data;
-import ru.practicum.shareit.booking.model.Request;
+import lombok.*;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "items")
 public class Item {
     @Id
@@ -29,5 +33,6 @@ public class Item {
 
     @JoinColumn(name = "request_id")
     @ManyToOne
-    private Request request;
+    private ItemRequest request;
+
 }

@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.service.BookingValidationException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> findAllByItem(Item item) {
         return commentRepository.findAllByItem(item);
+    }
+
+    @Override
+    public List<Comment> findAllByItemIn(List<Item> items) {
+        return commentRepository.findAllByItemIn(items);
     }
 
     @Override
