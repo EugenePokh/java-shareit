@@ -11,6 +11,8 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -47,6 +49,8 @@ public class ItemMapper {
         }
 
         if (bookings != null && owner.equals(item.getOwner())) {
+            Timestamp currentTime = Timestamp.from(Instant.now());
+
             bookings.stream()
                     .filter(booking -> booking.getStatus().equals(Booking.Status.APPROVED))
                     .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
