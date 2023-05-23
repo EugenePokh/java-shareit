@@ -26,7 +26,7 @@ public class ExceptionController {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUnknownStateException(final UnknownStateException e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse("Unknown state: " + e.getMessage(), "Неизвестное состояние запоса");

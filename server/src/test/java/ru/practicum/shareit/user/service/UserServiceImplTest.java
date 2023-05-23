@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -84,7 +83,7 @@ class UserServiceImplTest {
 
         List<User> list = userService.findAll();
 
-        assertThrows(ValidationException.class, () -> {
+        assertThrows(UserValidationException.class, () -> {
             userService.update(User.builder()
                     .id(user1.getId())
                     .name("test name1")

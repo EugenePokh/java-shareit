@@ -18,9 +18,6 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,8 +34,8 @@ public class ItemController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    public ItemResponseDto post(@Valid @RequestBody ItemPostDto itemDto,
-                                @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public ItemResponseDto post(@RequestBody ItemPostDto itemDto,
+                                @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
 
         ItemRequest itemRequest = null;
@@ -52,9 +49,9 @@ public class ItemController {
     }
 
     @PostMapping("/{id}/comment")
-    public CommentResponseDto postComment(@Valid @RequestBody CommentRequestDto commentRequestDto,
+    public CommentResponseDto postComment(@RequestBody CommentRequestDto commentRequestDto,
                                           @PathVariable Long id,
-                                          @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+                                          @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
 
@@ -64,8 +61,8 @@ public class ItemController {
 
     @PatchMapping("/{id}")
     public ItemResponseDto patch(@PathVariable Long id,
-                                 @Valid @RequestBody ItemPatchDto itemDto,
-                                 @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+                                 @RequestBody ItemPatchDto itemDto,
+                                 @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
         Item patchItem = ItemMapper.toModel(item, itemDto, user);
@@ -73,7 +70,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public List<ItemWithBookingResponseDto> findAll(@RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         List<Item> items = itemService.findAllByUser(user);
 
@@ -104,7 +101,7 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public ItemWithBookingResponseDto findById(@PathVariable Long id, @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public ItemWithBookingResponseDto findById(@PathVariable Long id, @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Item item = itemService.findById(id).orElseThrow(() -> new ItemNotFoundException("No item by id " + id));
         List<Comment> comments = commentService.findAllByItem(item);

@@ -6,14 +6,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
 import java.util.Set;
 
 @ToString
 @Getter
 @Setter
 @Builder
-public class ItemDto implements Serializable {
+public class ItemDto {
 
 
     private Long id;

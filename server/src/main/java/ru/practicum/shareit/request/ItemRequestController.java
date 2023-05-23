@@ -16,11 +16,6 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,27 +32,33 @@ public class ItemRequestController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemRequestResponseDto post(@Valid @RequestBody ItemRequestDto itemRequestDto,
-                                       @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public ItemRequestResponseDto post(@RequestBody ItemRequestDto itemRequestDto,
+                                       @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         ItemRequest itemRequest = ItemRequestMapper.toModel(itemRequestDto, user);
         return ItemRequestMapper.toDto(itemRequestService.create(itemRequest), null);
     }
 
     @GetMapping
-    public List<ItemRequestResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public List<ItemRequestResponseDto> findAll(@RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
-        return itemRequestService.findAllByRequestor(user, Sort.by("created").descending())
-                .stream()
-                .map(request -> {
-                    List<Item> items = itemService.findAllByRequest(request);
-                    return ItemRequestMapper.toDto(request, items);
-                })
+        List<ItemRequest> requests = itemRequestService.findAllByRequestor(user, Sort.by("created").descending());
+        Map<ItemRequest, List<Item>> listMap = new HashMap<>();
+        itemService.findAllByRequests(requests)
+                .forEach(item -> listMap.merge(item.getRequest(), Arrays.asList(item), (prev, newOne) -> {
+                    List<Item> res = new ArrayList<>();
+                    res.addAll(prev);
+                    res.addAll(newOne);
+
+                    return res;
+                }));
+        return requests.stream()
+                .map(request -> ItemRequestMapper.toDto(request, listMap.get(request)))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{requestId}")
-    public ItemRequestResponseDto findById(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
+    public ItemRequestResponseDto findById(@RequestHeader(USER_HEADER) Long userId,
                                            @PathVariable("requestId") Long id) {
         if (!userService.existsById(userId)) {
             throw new UserNotFoundException("No user by id " + userId);
@@ -68,9 +69,9 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestResponseDto> findAllRequestsByOtherUsers(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
-                                                                    @Valid @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                                    @Valid @Positive @RequestParam(required = false, defaultValue = "20") Integer size) {
+    public List<ItemRequestResponseDto> findAllRequestsByOtherUsers(@RequestHeader(USER_HEADER) Long userId,
+                                                                    @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                                    @RequestParam(required = false, defaultValue = "20") Integer size) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         PageRequest page = PageRequest.of(from / size, size, Sort.by("created").descending());
         List<ItemRequest> itemRequests = itemRequestService.findAllOtherRequestors(user, page);

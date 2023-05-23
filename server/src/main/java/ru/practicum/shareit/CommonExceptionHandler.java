@@ -10,6 +10,8 @@ import ru.practicum.shareit.booking.service.BookingValidationException;
 import ru.practicum.shareit.item.service.ItemNotFoundException;
 import ru.practicum.shareit.request.service.ItemRequestNotFoundException;
 import ru.practicum.shareit.user.service.UserNotFoundException;
+import ru.practicum.shareit.user.service.UserValidationException;
+
 import java.util.Map;
 
 @ControllerAdvice
@@ -26,6 +28,12 @@ public class CommonExceptionHandler {
     public ResponseEntity<Object> handleNotFoundException(RuntimeException ex) {
         Map<String, String> errors = Map.of("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler({UserValidationException.class})
+    public ResponseEntity<Object> handleUserValidationException(RuntimeException ex) {
+        Map<String, String> errors = Map.of("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

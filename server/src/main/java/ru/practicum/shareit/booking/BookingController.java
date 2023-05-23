@@ -3,7 +3,6 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -18,15 +17,10 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@Validated
 @RequestMapping(path = "/bookings")
 @AllArgsConstructor
 public class BookingController {
@@ -42,13 +36,11 @@ public class BookingController {
     private final ItemService itemService;
 
     @PostMapping
-    public BookingResponseDto post(@Valid @RequestBody BookingRequestDto bookingRequestDto,
-                                   @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+    public BookingResponseDto post(@RequestBody BookingRequestDto bookingRequestDto,
+                                   @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Booking booking = BookingMapper.toModel(bookingRequestDto);
-        if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart()) || bookingRequestDto.getEnd().isEqual(bookingRequestDto.getStart())) {
-            throw new BookingValidationException("Incorrect start and end dates");
-        }
+
         booking.setItem(itemService.findById(bookingRequestDto.getItemId()).orElseThrow(() -> new ItemNotFoundException("No item by id " + bookingRequestDto.getItemId())));
         if (!booking.getItem().getAvailable()) {
             throw new BookingValidationException("Cannot work with unavailable item");
@@ -62,7 +54,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingResponseDto patch(@PathVariable Long bookingId,
                                     @RequestParam Boolean approved,
-                                    @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+                                    @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Booking booking = bookingService.findById(bookingId).orElseThrow(() -> new BookingNotFoundException("No booking by id " + bookingId));
 
@@ -71,7 +63,7 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public BookingResponseDto findById(@PathVariable("bookingId") Long id,
-                                       @Valid @NotNull @RequestHeader(USER_HEADER) Long userId) {
+                                       @RequestHeader(USER_HEADER) Long userId) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         Booking booking = bookingService.findById(id).orElseThrow(() -> new BookingNotFoundException("No booking by id " + id));
         if (user.getId().equals(booking.getBooker().getId()) || user.getId().equals(booking.getItem().getOwner().getId())) {
@@ -82,10 +74,10 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingResponseDto> findAll(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
+    public List<BookingResponseDto> findAll(@RequestHeader(USER_HEADER) Long userId,
                                             @RequestParam(defaultValue = "ALL", name = "state") String stateName,
-                                            @Valid @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
-                                            @Valid @Positive @RequestParam(required = false, defaultValue = "20") Integer size) {
+                                            @RequestParam(required = false, defaultValue = "0") Integer from,
+                                            @RequestParam(required = false, defaultValue = "20") Integer size) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
 
@@ -125,10 +117,10 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    public List<BookingResponseDto> findAllByOwner(@Valid @NotNull @RequestHeader(USER_HEADER) Long userId,
+    public List<BookingResponseDto> findAllByOwner(@RequestHeader(USER_HEADER) Long userId,
                                                    @RequestParam(defaultValue = "ALL", name = "state") String stateName,
-                                                   @Valid @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                   @Valid @Positive @RequestParam(required = false, defaultValue = "20") Integer size) {
+                                                   @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                   @RequestParam(required = false, defaultValue = "20") Integer size) {
         User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No user by id " + userId));
         PageRequest page = PageRequest.of(from / size, size, Sort.by("start").descending());
 

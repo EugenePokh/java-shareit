@@ -70,7 +70,7 @@ class BookingControllerTest {
                 .content(objectMapper.writeValueAsString(dto));
 
         mvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
     }
 

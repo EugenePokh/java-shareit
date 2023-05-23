@@ -6,14 +6,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @ToString
 @Getter
 @Setter
 @Builder
-public class CommentDto implements Serializable {
+public class CommentDto {
 
 
     private Long id;

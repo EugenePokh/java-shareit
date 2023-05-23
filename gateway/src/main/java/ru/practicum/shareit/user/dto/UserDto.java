@@ -4,14 +4,12 @@ import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
 
 @ToString
-@NonNull
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserDto implements Serializable {
+public class UserDto {
 
     private Long id;
     @NotBlank

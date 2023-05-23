@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.validation.ValidationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ public class UserServiceImpl implements UserService {
         User origin = findById(user.getId()).get();
 
         if (!user.getEmail().equals(origin.getEmail()) && findByEmail(user.getEmail()).isPresent()) {
-            throw new ValidationException("same email occupied");
+            throw new UserValidationException("same email occupied");
         }
         return userRepository.save(user);
     }

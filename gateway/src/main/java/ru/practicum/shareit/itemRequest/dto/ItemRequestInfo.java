@@ -5,13 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
-
 @ToString
 @Getter
 @Setter
 @Builder
-public class ItemRequestInfo implements Serializable {
+public class ItemRequestInfo {
     private Long id;
     private String name;
     private String description;
