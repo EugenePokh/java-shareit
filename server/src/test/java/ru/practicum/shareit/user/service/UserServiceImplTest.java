@@ -92,6 +92,7 @@ class UserServiceImplTest {
         });
     }
 
+
     @Test
     void findByEmail() {
         User user = User.builder()
